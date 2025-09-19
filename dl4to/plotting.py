@@ -14,7 +14,7 @@ from typing import Union
 
 from .utils import cast_to_problem
 
-pv.set_jupyter_backend('pythreejs')
+pv.set_jupyter_backend('trame')
 
 # Internal Cell
 class Voxels(go.Mesh3d):
