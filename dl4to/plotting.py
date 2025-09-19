@@ -191,7 +191,13 @@ def pyvista_plot_scalar_field(
     scalar_field = np.where(scalar_field < threshold+1e-9, 0., 1.)
     if len(scalar_field.shape) == 4:
         scalar_field = scalar_field.squeeze(0)
-    grid = pv.UniformGrid()
+        
+    UG = getattr(pv, "UniformGrid", None)
+    if UG is None:
+        grid = pv.ImageData()
+    else:
+        grid = UG()
+    
     grid.dimensions = np.array(scalar_field.shape) + 1
     grid.spacing = problem.h
     grid.cell_data["scalar_field"] = scalar_field.flatten(order="F")
