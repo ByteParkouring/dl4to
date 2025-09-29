@@ -154,6 +154,7 @@ class CSVConverter():
 
 
 
+
     def _get_θ(self, data, shape, voxels):
         θ = torch.zeros(1, *shape, dtype=self.dtype)
         vals = torch.as_tensor(data["density"].values, dtype=self.dtype)
