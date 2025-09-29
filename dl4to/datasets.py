@@ -134,25 +134,33 @@ class CSVConverter():
 
 
     def _get_forces_boundary_conditions_and_design_space(self, data, shape, voxels):
+        # Kräfte (float, self.dtype)
         F = torch.zeros(3, *shape, dtype=self.dtype)
-        F[0, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['force_x'].values, dtype=self.dtype)
-        F[1, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['force_y'].values, dtype=self.dtype)
-        F[2, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['force_z'].values, dtype=self.dtype)
+        F[0, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["force_x"].values, dtype=self.dtype)
+        F[1, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["force_y"].values, dtype=self.dtype)
+        F[2, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["force_z"].values, dtype=self.dtype)
 
+        # Dirichlet-BC (float, self.dtype)
         Ω_dirichlet = torch.zeros(3, *shape, dtype=self.dtype)
-        Ω_dirichlet[0, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['dirichlet_x'].values, dtype=self.dtype)
-        Ω_dirichlet[1, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['dirichlet_y'].values, dtype=self.dtype)
-        Ω_dirichlet[2, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['dirichlet_z'].values, dtype=self.dtype)
+        Ω_dirichlet[0, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["dirichlet_x"].values, dtype=self.dtype)
+        Ω_dirichlet[1, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["dirichlet_y"].values, dtype=self.dtype)
+        Ω_dirichlet[2, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["dirichlet_z"].values, dtype=self.dtype)
 
-        Ω_design = torch.zeros(1, *shape, dtype=int)
-        Ω_design[:, voxels[0], voxels[1], voxels[2]] = torch.from_numpy(data['design_space'].values.astype(int))
+        # Designraum (int64, plattformstabil)
+        Ω_design = torch.zeros(1, *shape, dtype=torch.long)
+        Ω_design[:, voxels[0], voxels[1], voxels[2]] = torch.as_tensor(data["design_space"].values, dtype=torch.long)
+
         return F, Ω_dirichlet, Ω_design
+
 
 
     def _get_θ(self, data, shape, voxels):
         θ = torch.zeros(1, *shape, dtype=self.dtype)
-        θ[:, voxels[0], voxels[1], voxels[2]] = torch.tensor(data['density'].values, dtype=self.dtype)
+        vals = torch.as_tensor(data["density"].values, dtype=self.dtype)
+        vals = torch.nan_to_num(vals, nan=0.0, posinf=1.0, neginf=0.0).clamp_(0.0, 1.0)
+        θ[:, voxels[0], voxels[1], voxels[2]] = vals
         return θ
+
 
 
     def __call__(self,
